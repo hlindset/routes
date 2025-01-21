@@ -45,11 +45,10 @@ defmodule Routes.Processor do
   end
 
   defp generate_files(routes) do
-    if Application.get_env(:routes, :typescript, false) do
-      Routes.Generator.write_javascript_with_types(routes, output_path())
-    else
-      Routes.Generator.write_javascript(routes, output_path())
-    end
+    Routes.Generator.write_javascript(routes, output_path(),
+      module: Application.get_env(:routes, :module, :esmodule),
+      typescript: Application.get_env(:routes, :typescript, false)
+    )
 
     :ok
   end

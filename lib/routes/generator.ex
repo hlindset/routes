@@ -6,7 +6,7 @@ defmodule Routes.Generator do
   @doc """
   Generates JavaScript code from transformed routes.
   """
-  def generate_javascript(routes) do
+  def generate_javascript(routes, module_type) do
     routes_json = Jason.encode!(routes)
 
     """
@@ -76,11 +76,11 @@ defmodule Routes.Generator do
       };
     })();
 
-    if (typeof module !== 'undefined' && module.exports) {
-      module.exports = Routes;
-    } else {
-      window.Routes = Routes;
-    }
+    #{case module_type do
+      :esmodule -> "export default Routes;"
+      :commonjs -> "module.exports = Routes;"
+      :global -> "window.Routes = Routes;"
+    end}
     """
   end
 
@@ -158,28 +158,18 @@ defmodule Routes.Generator do
   end
 
   @doc """
-  Writes JavaScript file.
+  Writes a JavaScript file and optionally a TypeScript declaration file.
   """
-  def write_javascript(routes, base_path) do
-    js_content = generate_javascript(routes)
-
+  def write_javascript(routes, base_path, opts) do
+    js_content = generate_javascript(routes, opts[:module])
     js_path = Path.join(base_path, "routes.js")
-
     File.write!(js_path, js_content)
-  end
 
-  @doc """
-  Writes both JavaScript and TypeScript declaration files.
-  """
-  def write_javascript_with_types(routes, base_path) do
-    js_content = generate_javascript(routes)
-    dts_content = generate_typescript_declarations(routes)
-
-    js_path = Path.join(base_path, "routes.js")
-    dts_path = Path.join(base_path, "routes.d.ts")
-
-    File.write!(js_path, js_content)
-    File.write!(dts_path, dts_content)
+    if opts[:typescript] do
+      dts_content = generate_typescript_declarations(routes)
+      dts_path = Path.join(base_path, "routes.d.ts")
+      File.write!(dts_path, dts_content)
+    end
   end
 
   # Add new helper function for generating RoutePathConfig
