@@ -178,7 +178,7 @@ defmodule Routes.Generator do
     |> Enum.map(fn route ->
       params =
         if Enum.empty?(route.params) do
-          "Record<string, never>"
+          "{}"
         else
           route.params
           |> Enum.map(&"#{&1}: string | number")
@@ -203,7 +203,7 @@ defmodule Routes.Generator do
     |> Enum.map(fn route ->
       params =
         if Enum.empty?(route.params) do
-          "Record<string, never>"
+          "{}"
         else
           route.params
           |> Enum.map(&"#{&1}: string | number")
